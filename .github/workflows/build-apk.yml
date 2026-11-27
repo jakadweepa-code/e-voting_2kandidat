@@ -43,7 +43,20 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "21"
-
+      - name: Add camera permission to AndroidManifest
+        run: |
+          node -e '
+            const fs = require("fs");
+            const p = "android/app/src/main/AndroidManifest.xml";
+            let xml = fs.readFileSync(p, "utf8");
+            if (!xml.includes("android.permission.CAMERA")) {
+              xml = xml.replace(
+                "<application",
+                "<uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-feature android:name=\"android.hardware.camera\" android:required=\"false\" />\n\n    <application"
+              );
+              fs.writeFileSync(p, xml, "utf8");
+            }
+          '
       - name: Build Debug APK
         working-directory: android
         run: ./gradlew assembleDebug
